@@ -164,11 +164,13 @@ Please adhere to the Code of Conduct in all interactions.
 ```text
 MIT License
 
-Copyright (c) 2025 Your Name
+Copyright (c) 2025 Xatus Betazx17
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction...
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
 ---
@@ -269,13 +271,102 @@ scipy>=1.7
 
 ## src/mother_ship.py
 
-*(Module code unchanged.)*
+```python
+# src/mother_ship.py
+import pandas as pd
+from simulation.buoyancy_simulation import BuoyancySimulation
+
+class MotherShip:
+    def __init__(self, gas_cells_file="data/gas_cells.csv"):
+        # Load gas cell data for buoyancy
+        self.gas_cells = pd.read_csv(gas_cells_file)
+        self.sim = BuoyancySimulation(self.gas_cells)
+        # Default cruise speed in meters per second
+        self.cruise_speed_mps = 50.0
+
+    def compute_lift(self, altitude_m):
+        "Returns net lift (Newtons) at a given altitude."  
+        return self.sim.net_lift(altitude_m)
+
+    def load_cargo(self, pod):
+        # TODO: extend with actual loading logic  
+        pass
+
+    def deploy_drone(self, drone):
+        # TODO: integrate with transfer_system  
+        pass
+
+    def set_cruise_speed_for_zone(self, zone_distance_m, drone):
+        """
+        Adjust cruise speed so that a drone can complete its round-trip
+        to the delivery zone and back before the ship moves on.
+        """
+        rt_time = (zone_distance_m / drone.speed_mps) * 2
+        required_speed = zone_distance_m / rt_time
+        self.cruise_speed_mps = max(self.cruise_speed_mps, required_speed)
+        return self.cruise_speed_mps
+
+    def navigate(self, distance_m):
+        if self.cruise_speed_mps <= 0:
+            raise ValueError("Cruise speed must be greater than zero.")
+        time_s = distance_m / self.cruise_speed_mps
+        return time_s
+
+if __name__ == "__main__":
+    ship = MotherShip()
+    lift = ship.compute_lift(0)
+    print(f"Sea-level lift: {lift:.2f} N")
+```
 
 ---
 
 ## src/dragon_drone.py
 
-*(Module code unchanged.)*
+```python
+# src/dragon_drone.py
+from enum import Enum
+
+class DroneState(Enum):
+    IDLE = 0
+    IN_TRANSIT = 1
+    DOCKED = 2
+
+class DragonDrone:
+    def __init__(self, drone_id, speed_mps=20.0, fuel_capacity_kg=5.0, fuel_consumption_kg_per_m=0.01):
+        self.drone_id = drone_id
+        self.state = DroneState.IDLE
+        # Performance parameters
+        self.speed_mps = speed_mps                 # Cruise speed (m/s)
+        self.fuel_capacity_kg = fuel_capacity_kg   # Total fuel on board (kg)
+        self.fuel_consumption = fuel_consumption_kg_per_m  # Fuel used per meter (kg/m)
+
+    def max_range_m(self):
+        "Returns maximum one-way range (meters) based on fuel capacity."  
+        return self.fuel_capacity_kg / self.fuel_consumption
+
+    def fuel_needed_for_distance(self, distance_m):
+        "Estimate fuel required (kg) for a one-way trip of distance_m."  
+        needed = distance_m * self.fuel_consumption
+        if needed > self.fuel_capacity_kg:
+            raise ValueError("Distance exceeds fuel capacity.")
+        return needed
+
+    def takeoff(self):
+        # TODO: implement VTOL sequence  
+        self.state = DroneState.IN_TRANSIT
+
+    def navigate(self, coords):
+        # TODO: integrate with flight control  
+        pass
+
+    def dock(self, ship):
+        # TODO: implement docking mechanism  
+        self.state = DroneState.DOCKED
+
+    def unload(self):
+        # TODO: actuate cargo release  
+        pass
+```
 
 ---
 
