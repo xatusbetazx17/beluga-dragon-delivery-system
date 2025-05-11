@@ -57,8 +57,7 @@ beluga-dragon-delivery-system/
     ├── buoyancy_simulation.py
     └── digital_twin.py                 # Co-simulation stub
 ```
-beluga-dragon-delivery-system/docs/images/realistic_render.png  
-beluga-dragon-delivery-system/docs/images/blueprint_schematic.png  
+
 
 ---
 
@@ -225,10 +224,9 @@ data/*.csv
 
 ## README.md
 
-```markdown
 # Beluga-Dragon Delivery System
 
-[![CI](https://github.com/username/beluga-dragon-delivery-system/actions/workflows/ci.yml/badge.svg)](https://github.com/username/beluga-dragon-delivery-system/actions)
+[![CI](https://github.com/xatusbetazx17/beluga-dragon-delivery-system/actions/workflows/ci.yml/badge.svg)](https://github.com/username/beluga-dragon-delivery-system/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python Version](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)
 
@@ -243,12 +241,15 @@ A **hybrid helium airship** ("Beluga") combined with autonomous **dragon drones*
 - [License](#license)
 
 ## Features
+
 - Heavy-lift cargo transport via helium airship
 - VTOL drone deployment for last-mile delivery
 - Automated cargo transfer system
 - Simulation tools for buoyancy and lift calculations
 
+
 ## Architecture
+
 ![Architecture Diagram](docs/architecture_diagram.png)
 
 ![Concept Illustration](docs/images/realistic_render.png)
