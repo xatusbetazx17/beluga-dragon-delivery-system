@@ -252,7 +252,7 @@ A **hybrid helium airship** ("Beluga") combined with autonomous **dragon drones*
 
 ![Architecture Diagram](docs/architecture_diagram.png)
 
-![Concept Illustration](docs/images/realistic_render.png)
+![Concept Illustration](docs/images/beluga-delivery-mother-ship.png)
 *Realistic render of the Beluga-Dragon delivery system*
 
 ![Blueprint Schematic](docs/images/schematis-dragon-beluga.png)
