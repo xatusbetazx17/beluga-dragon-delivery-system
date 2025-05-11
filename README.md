@@ -643,5 +643,82 @@ if __name__ == "__main__":
 
 ## simulation/buoyancy_simulation.py
 
-*(Simulation code unchanged.)*
+~~~
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+def air_density(altitude_m: float) -> float:
+    """
+    Simplified ISA model for air density vs. altitude.
+    ρ = 1.225 * exp(-altitude / 8500)
+    """
+    return 1.225 * np.exp(-altitude_m / 8500.0)
+
+def helium_density(pressure_kPa: float, temperature_K: float = 288.15) -> float:
+    """
+    Ideal gas law for helium density.
+    ρ = (P * 1000) / (R * T)
+    where R for helium ≈ 2077 J/(kg·K)
+    """
+    R_HE = 2077.0  # J/(kg·K)
+    return (pressure_kPa * 1000.0) / (R_HE * temperature_K)
+
+class BuoyancySimulation:
+    """
+    Calculates net buoyant lift for a set of helium gas cells 
+    at various altitudes, and can plot a lift-vs-altitude curve.
+    """
+
+    def __init__(self, gas_cells_df):
+        """
+        Args:
+            gas_cells_df: pandas.DataFrame with columns
+                - volume_m3     : float, cell volume in cubic meters
+                - pressure_kPa  : float, internal pressure in kPa
+        """
+        self.cells = gas_cells_df
+
+    def net_lift(self, altitude_m: float) -> float:
+        """
+        Compute net lift (in Newtons) at the specified altitude.
+        
+        L = Σ[(ρ_air(alt) - ρ_He) * V_cell * g]
+        """
+        rho_air = air_density(altitude_m)
+        total_lift = 0.0
+        g = 9.81  # m/s²
+
+        for _, cell in self.cells.iterrows():
+            rho_he = helium_density(cell.pressure_kPa)
+            V = cell.volume_m3
+            total_lift += (rho_air - rho_he) * V * g
+
+        return total_lift
+
+    def plot_lift_curve(self,
+                        alt_max: float = 5000.0,
+                        num_points: int = 100,
+                        show: bool = True):
+        """
+        Plot net lift vs altitude from 0 to alt_max.
+
+        Args:
+            alt_max   : Maximum altitude in meters.
+            num_points: Number of points in the curve.
+            show      : If True, calls plt.show().
+        """
+        altitudes = np.linspace(0, alt_max, num_points)
+        lifts = [self.net_lift(h) for h in altitudes]
+
+        plt.figure(figsize=(8, 5))
+        plt.plot(altitudes, lifts, linewidth=2)
+        plt.title("Buoyancy Net Lift vs. Altitude")
+        plt.xlabel("Altitude (m)")
+        plt.ylabel("Net Lift (N)")
+        plt.grid(True)
+
+        if show:
+            plt.show()
+~~~
 
