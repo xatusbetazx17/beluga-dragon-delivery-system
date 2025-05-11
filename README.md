@@ -546,9 +546,100 @@ class TransferSystem:
 
 ## src/control_center.py
 
-*(Module code unchanged.)*
+~~~
 
----
+import logging
+from datetime import datetime
+
+from src.mother_ship import MotherShip
+from src.dragon_drone import DragonDrone
+from src.transfer_system import TransferSystem
+from src.fleet_manager import FleetManager
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S"
+)
+
+class ControlCenter:
+    """
+    The ControlCenter receives orders, registers craft with the FleetManager,
+    and orchestrates the TransferSystem to load, dispatch, and recover drones.
+    """
+
+    def __init__(self, num_drones=5, weather_api_key=None, queue_url=None):
+        # Initialize mother ship
+        self.ship = MotherShip()
+        # Create drone fleet
+        self.drones = [DragonDrone(drone_id=i) for i in range(num_drones)]
+        # Setup transfer system (handles loading & dispatch)
+        self.transfer = TransferSystem(self.ship, self.drones, weather_api_key)
+        # Setup fleet manager (handles scheduling & health)
+        self.fleet_manager = FleetManager(queue_url=queue_url)
+
+        # Register craft with fleet manager
+        self.fleet_manager.register(self.ship)
+        for drone in self.drones:
+            self.fleet_manager.register(drone)
+
+        # Internal store of pending orders
+        self.orders = []
+
+    def receive_order(self, profile_name: str, coords: tuple):
+        """
+        Add a new delivery order.
+
+        Args:
+            profile_name: key from payload_profiles.yaml
+            coords: (latitude, longitude) of drop zone
+        """
+        order = {
+            "profile": profile_name,
+            "coords": coords,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        self.orders.append(order)
+        logging.info(f"Received order: {order}")
+        # Hand off to fleet manager (e.g. via RabbitMQ)
+        self.fleet_manager.schedule_mission(order)
+
+    def start_mission(self):
+        """
+        Begin processing all received orders:
+         1. Load cargo onto drones
+         2. Dispatch drones to each destination
+         3. Recover drones back to the mother ship
+        """
+        if not self.orders:
+            logging.warning("No orders to process.")
+            return
+
+        logging.info("Loading cargo onto drones...")
+        self.transfer.load_all(self.orders)
+
+        logging.info("Dispatching drones...")
+        self.transfer.dispatch_all()
+
+        logging.info("Recovering drones and finalizing mission...")
+        self.transfer.recover_all()
+
+        logging.info("All orders completed.")
+        # Clear orders
+        self.orders = []
+
+if __name__ == "__main__":
+    # Example usage
+    # - Replace with real API key or queue URL if needed
+    cc = ControlCenter(num_drones=3, weather_api_key="YOUR_API_KEY", queue_url="amqp://guest:guest@localhost/")
+    # Simulate incoming orders
+    cc.receive_order("fragile_small", (40.7808, -74.2013))
+    cc.receive_order("bulk_grain",     (40.7402, -74.0324))
+    # Start the mission
+    cc.start_mission()
+~~~
+
+
 
 ## simulation/buoyancy_simulation.py
 
