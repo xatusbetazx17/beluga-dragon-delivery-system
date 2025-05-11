@@ -252,6 +252,13 @@ A **hybrid helium airship** ("Beluga") combined with autonomous **dragon drones*
 
 ![Architecture Diagram](docs/images/architecture-of-beluga.png)
 
+- **Beluga Airship** ↔ **Control Center**
+- **Beluga Airship** → **Drones**
+- **Drones** ↔ **Weather Service**
+- **Weather Service** ↔ **Digital Twin**
+- **User** ↔ **Weather Service** ↔ **Database**
+
+
 ![Concept Illustration](docs/images/beluga-delivery-mother-ship.png)
 *Realistic render of the Beluga-Dragon delivery system*
 
