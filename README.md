@@ -325,11 +325,13 @@ if __name__ == "__main__":
 ```python
 # src/dragon_drone.py
 from enum import Enum
+import math
 
 class DroneState(Enum):
     IDLE = 0
     IN_TRANSIT = 1
     DOCKED = 2
+    DROPPING = 3
 
 class DragonDrone:
     def __init__(self, drone_id, speed_mps=20.0, fuel_capacity_kg=5.0, fuel_consumption_kg_per_m=0.01):
@@ -339,6 +341,11 @@ class DragonDrone:
         self.speed_mps = speed_mps                 # Cruise speed (m/s)
         self.fuel_capacity_kg = fuel_capacity_kg   # Total fuel on board (kg)
         self.fuel_consumption = fuel_consumption_kg_per_m  # Fuel used per meter (kg/m)
+        # Parachute drop parameters
+        self.payload_mass_kg = 1.0                  # Default payload mass
+        self.parachute_area_m2 = 5.0               # Parachute canopy area
+        self.parachute_drag_coefficient = 1.5      # Drag coefficient
+        self.drop_altitude_m = 50.0                # Release altitude in meters
 
     def max_range_m(self):
         "Returns maximum one-way range (meters) based on fuel capacity."  
@@ -350,6 +357,39 @@ class DragonDrone:
         if needed > self.fuel_capacity_kg:
             raise ValueError("Distance exceeds fuel capacity.")
         return needed
+
+    def fuel_needed_for_round_trip(self, distance_m):
+        "Estimate fuel required (kg) for a return trip over distance_m."  
+        return self.fuel_needed_for_distance(distance_m * 2)
+
+    def calculate_drop_zone(self, target_coords, wind_vector=(0.0, 0.0)):
+        """
+        Compute optimal release point so that a parachute-package
+        lands at the target coordinate.
+
+        Args:
+            target_coords (tuple): (latitude, longitude) of delivery target.
+            wind_vector (tuple): (vx, vy) wind speed components (m/s).
+
+        Returns:
+            tuple: (lat, lon) of release point.
+        """
+        # Simplified free-fall with drag approximation
+        g = 9.81
+        # Estimate descent time under parachute (neglecting acceleration phase)
+        terminal_velocity = math.sqrt((2 * self.payload_mass_kg * g) / \
+                                      (self.parachute_drag_coefficient * 1.225 * self.parachute_area_m2))
+        descent_time = self.drop_altitude_m / terminal_velocity
+        # Horizontal drift due to wind during descent
+        drift_north = wind_vector[1] * descent_time
+        drift_east = wind_vector[0] * descent_time
+        # Approximate degrees per meter conversion
+        meters_per_deg_lat = 111000
+        meters_per_deg_lon = 111000 * math.cos(math.radians(target_coords[0]))
+        # Compute release coords
+        release_lat = target_coords[0] - (drift_north / meters_per_deg_lat)
+        release_lon = target_coords[1] - (drift_east / meters_per_deg_lon)
+        return (release_lat, release_lon)
 
     def takeoff(self):
         # TODO: implement VTOL sequence  
