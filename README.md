@@ -57,6 +57,8 @@ beluga-dragon-delivery-system/
     ├── buoyancy_simulation.py
     └── digital_twin.py                 # Co-simulation stub
 ```
+beluga-dragon-delivery-system/docs/images/realistic_render.png  
+beluga-dragon-delivery-system/docs/images/blueprint_schematic.png  
 
 ---
 
