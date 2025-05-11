@@ -14,19 +14,48 @@ beluga-dragon-delivery-system/
 ├── LICENSE
 ├── README.md
 ├── requirements.txt
+├── Dockerfile
+├── docker-compose.yml
+├── k8s/
+│   ├── deployment.yaml
+│   └── service.yaml
 ├── docs/
 │   ├── design.md
-│   └── architecture_diagram.png  # Placeholder for architecture diagram
+│   ├── architecture_diagram.png       # Placeholder
+│   └── compliance/
+│       ├── hazmat_checklist.md
+│       └── gen_compliance_docs.py     # Script generator stub
 ├── data/
-│   └── gas_cells.csv
+│   ├── gas_cells.csv
+│   ├── materials.csv                  # Material density, cost catalog
+│   └── payload_profiles.yaml          # JSON/YAML payload definitions
+├── locales/
+│   ├── en.json                        # English UI strings
+│   └── es.json                        # Spanish UI strings
 ├── src/
 │   ├── __init__.py
 │   ├── mother_ship.py
 │   ├── dragon_drone.py
 │   ├── transfer_system.py
-│   └── control_center.py
+│   ├── control_center.py
+│   ├── payload_manager.py             # Auto-select container
+│   ├── fleet_manager.py               # Scheduler & maintenance stubs
+│   ├── weather_client.py
+│   ├── terrain/                        # Terrain & obstacle data
+│   │   └── terrain_manager.py
+│   ├── audit/
+│   │   └── health_check.py
+│   ├── containers/
+│   │   ├── base.py
+│   │   ├── refrigerated.py
+│   │   ├── bulk_powder.py              # New container type
+│   │   └── liquid_tank.py              # New container type
+│   ├── billing.py                     # Cost/invoice generator stub
+│   ├── api/
+│   │   └── app.py
 └── simulation/
-    └── buoyancy_simulation.py
+    ├── buoyancy_simulation.py
+    └── digital_twin.py                 # Co-simulation stub
 ```
 
 ---
