@@ -306,9 +306,41 @@ scipy>=1.7
 
 ## docs/design.md
 
-*(Design document unchanged.)*
+
+# System Design Document
+
+## 1. Mother Ship
+- Hybrid airship with helium gas cells and aerodynamic hull.
+- Modules:
+  - **GasCellManager**: tracks cell pressures and volumes.  
+  - **PropulsionController**: controls vectorable fans for VTOL and cruise.  
+  - **CargoBay**: manages modular cargo pods and docking hardpoints.
+
+## 2. Dragon Drone
+- VTOL unmanned aerial vehicle with tilt-rotors.
+- Modules:
+  - **FlightController**: handles transition between hover and forward flight.  
+  - **DockingMechanism**: automated grappling claws to lock onto mother ship hardpoints.
+
+## 3. Transfer System
+- Automated gantry inside the cargo bay transfers pods.
+- Interfaces:
+  - `load_pod(pod_id: str, drone_id: int)`  
+  - `unload_pod(drone_id: int, destination_coords: Tuple[float, float])`
+
+## 4. Control Center
+- Orchestrates end-to-end missions:
+  - `schedule_drones()`: assigns orders to available drones.  
+  - `monitor_telemetry()`: tracks real-time status of ship and drones.
+
+## 5. Simulation
+- **BuoyancySimulation**:
+  - Computes net lift via  
+    `L = Σ[(ρ_air(alt) - ρ_helium) * V_cell * g]`  
+  - `plot_lift_curve()`: visualizes lift versus altitude.
 
 ---
+
 
 ## data/gas_cells.csv
 ~~~
