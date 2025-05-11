@@ -459,9 +459,90 @@ class DragonDrone:
 
 ## src/transfer_system.py
 
-*(Module code unchanged.)*
+```
 
----
+from src.payload_manager import PayloadManager
+from src.weather_client import WeatherClient
+
+class TransferSystem:
+    """
+    Orchestrates loading cargo onto drones, dispatching them to
+    delivery zones, and recovering them back to the mother ship.
+    """
+
+    def __init__(self, ship, drones, weather_api_key=None):
+        self.ship = ship
+        self.drones = drones
+        self.payload_manager = PayloadManager()
+        self.orders = []           # Will hold list of dicts: {'profile':..., 'coords':(lat,lon)}
+
+        if weather_api_key:
+            self.weather = WeatherClient(weather_api_key)
+        else:
+            self.weather = None
+
+    def load_all(self, orders):
+        """
+        Load each drone with the appropriate container/payload.
+
+        Args:
+            orders (List[dict]): each dict must have:
+                - 'profile' (str): payload_profiles.yaml key
+                - 'coords'  (tuple): (latitude, longitude)
+        """
+        self.orders = orders
+        for drone, order in zip(self.drones, self.orders):
+            # Select and validate container
+            container = self.payload_manager.select_container(order['profile'])
+            # Load container into the ship’s cargo bay
+            self.ship.load_cargo(container)
+            # Transfer container from ship to drone
+            drone.load_container(container)
+
+    def dispatch_all(self):
+        """
+        For each loaded drone:
+        1. Take off
+        2. Compute drop point (with optional wind data)
+        3. Fly to drop point
+        4. Release payload
+        5. Return to ship
+        6. Dock
+        """
+        for drone, order in zip(self.drones, self.orders):
+            dest = order['coords']
+            wind_vector = (0.0, 0.0)
+            if self.weather:
+                w = self.weather.get_conditions(*dest)
+                # Example: assume w['wind']['speed'] in m/s and direction in degrees
+                speed = w.get('wind', {}).get('speed', 0)
+                deg   = w.get('wind', {}).get('deg', 0)
+                # Convert polar to cartesian (east, north)
+                import math
+                rad = math.radians(deg)
+                wind_vector = (speed * math.cos(rad), speed * math.sin(rad))
+
+            # Calculate optimal release point
+            drop_point = drone.calculate_drop_zone(dest, wind_vector)
+
+            # Begin mission
+            drone.takeoff()
+            drone.navigate(drop_point)
+            drone.unload()        # drop/parachute logic
+            # Return home
+            home_coords = self.ship.current_coords()  # you’ll need to implement current_coords()
+            drone.navigate(home_coords)
+            drone.dock(self.ship)
+
+    def recover_all(self):
+        """
+        (Optional) any post-flight unload or logging steps.
+        """
+        for drone in self.drones:
+            # E.g. empty out any remaining containers back into the ship
+            pass
+```
+
 
 ## src/control_center.py
 
