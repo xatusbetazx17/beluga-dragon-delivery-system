@@ -311,9 +311,12 @@ scipy>=1.7
 ---
 
 ## data/gas_cells.csv
-
-*(Sample data unchanged.)*
-
+~~~
+cell_id,volume_m3,pressure_kPa,capacity_kg
+1,500,101.3,40000
+2,500,101.3,40000
+3,250,101.3,20000
+~~~
 ---
 
 ## src/mother_ship.py
